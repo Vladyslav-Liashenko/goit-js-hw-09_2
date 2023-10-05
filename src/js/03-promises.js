@@ -16,32 +16,17 @@ submitBtn.addEventListener("click", (e) => {
       setTimeout(() => {
         const shouldResolve = Math.random() > 0.3;
         if (shouldResolve) {
-          resolve({ position, delay });
+          resolve(Notiflix.Notify.success(
+         `✅ Fulfilled promise ${position} in ${delay}ms`));
         } else {
-          reject({ position, delay });
+          reject(Notiflix.Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`));
         }
       }, delay);
     });
   }
 
-  const promises = [];
-
   for (let i = 1; i <= amount; i++) {
-    promises.push(createSinglePromise(i, delay + (i - 1) * step));
+    createSinglePromise(i, delay + (i - 1) * step).then(resp => resp).catch( e => console.log(e));
   }
-
-  Promise.all(promises.map((p) => p.catch((e) => e))).then((results) => {
-    results.forEach(({ position, delay }) => {
-      if (delay instanceof Error) {
-        Notiflix.Notify.failure(
-          `❌ Rejected promise ${position} in ${delay.position}ms`
-        );
-      } else {
-        Notiflix.Notify.success(
-          `✅ Fulfilled promise ${position} in ${delay}ms`
-        );
-      }
-    });
-  });
 });
 

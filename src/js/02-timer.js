@@ -14,15 +14,13 @@ const options = {
   enableTime: true,
   time_24hr: true,
   minDate: "today",
-  onClose(selectedDates) {
-    const selectedDate = selectedDates[0];
-    if (selectedDate <= new Date()) {
+  onClose([selectedDates]) {
+    if (selectedDates <= Date.now()) {
       Notiflix.Report.failure(
         "Error",
         "Please choose a date in the future",
         "Close"
       );
-      datetime.value = "";
       startButton.disabled = true;
     } else {
       startButton.disabled = false;
@@ -33,39 +31,42 @@ const options = {
 const datePicker = flatpickr("#datetime-picker", options);
 startButton.addEventListener("click", () => {
     
-    let milliseconds = new Date(datetime.value);
-    milliseconds = milliseconds.getTime();
-
-
+  const milliseconds = new Date(datetime.value).getTime();
   countdownInterval = setInterval(() => {
-    const nowTime = new Date();
-    const nowTimeM = nowTime.getTime();
-    function convertMs(ms) {
-      // Number of milliseconds per unit of time
-      const second = 1000;
-      const minute = second * 60;
-      const hour = minute * 60;
-      const day = hour * 24;
-
-      // Remaining days
-      const days = Math.floor(ms / day);
-      // Remaining hours
-      const hours = Math.floor((ms % day) / hour);
-      // Remaining minutes
-      const minutes = Math.floor(((ms % day) % hour) / minute);
-      // Remaining seconds
-      const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-      return { days, hours, minutes, seconds };
+    const nowTime = new Date().getTime();
+    if (milliseconds <= nowTime) {
+      clearInterval(countdownInterval);
+      return;
     }
-    const time = convertMs(milliseconds - nowTimeM);
-
-    beforeDays.textContent = modifyDate(time.days, 2);
-    beforeHour.innerHTML = modifyDate(time.hours, 2);
-    beforeMinute.innerHTML = modifyDate(time.minutes, 2);
-    beforeSecond.textContent = modifyDate(time.seconds, 2);
+    const time = convertMs(milliseconds - nowTime);
+    innerData(time);
   }, 1000);
 });
 
+function innerData(time) {
+  beforeDays.textContent = modifyDate(time.days, 2);
+  beforeHour.innerHTML = modifyDate(time.hours, 2);
+  beforeMinute.innerHTML = modifyDate(time.minutes, 2);
+  beforeSecond.textContent = modifyDate(time.seconds, 2);
+};
+
 function modifyDate(num, totalLength) {
   return String(num).padStart(totalLength, "0");
+}
+function convertMs(ms) {
+  // Number of milliseconds per unit of time
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+
+  // Remaining days
+  const days = Math.floor(ms / day);
+  // Remaining hours
+  const hours = Math.floor((ms % day) / hour);
+  // Remaining minutes
+  const minutes = Math.floor(((ms % day) % hour) / minute);
+  // Remaining seconds
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+  return { days, hours, minutes, seconds };
 }
